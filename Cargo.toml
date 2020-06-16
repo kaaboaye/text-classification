@@ -7,3 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rayon = "1"
+regex = "1"
+walkdir = "2"
+lazy_static = "1"
+radix_trie = "0"
+itertools = "0"
