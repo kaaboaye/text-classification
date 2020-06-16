@@ -1,4 +1,4 @@
-use crate::stopwords::stopwords;
+use crate::stopwords::is_stopword;
 use radix_trie::Trie;
 use rayon::iter::ParallelBridge;
 use rayon::prelude::ParallelIterator;
@@ -9,13 +9,13 @@ use std::fs;
 pub struct ParsedFile {
     pub doc_id: String,
     pub category: String,
-    pub total_word_count: u32,
+    pub total_word_count: f32,
     pub counted_words: Trie<String, u32>,
 }
 
 pub fn parse() -> Result<Vec<ParsedFile>, Box<dyn std::error::Error>> {
     lazy_static! {
-        static ref WORD_REGEX: Regex = Regex::new("([a-z][a-z'\\-]+[a-z])").unwrap();
+        static ref WORD_REGEX: Regex = Regex::new("([a-z][a-z'\\-\\.]+[a-z])").unwrap();
     }
 
     let res = walkdir::WalkDir::new("datasets/articles")
@@ -54,6 +54,7 @@ pub fn parse() -> Result<Vec<ParsedFile>, Box<dyn std::error::Error>> {
             let contents = fs::read_to_string(path);
 
             if contents.is_err() {
+                eprintln!("File {} is not a valid UTF-8", path.display());
                 return None;
             }
 
@@ -88,7 +89,7 @@ pub fn parse() -> Result<Vec<ParsedFile>, Box<dyn std::error::Error>> {
             WORD_REGEX
                 .captures_iter(body.as_str())
                 .map(|caps| caps.get(1).map_or("", |m| m.as_str()))
-                .filter(|word| !stopwords().contains(*word))
+                .filter(|word| !is_stopword(word))
                 .for_each(|word| {
                     total_word_count += 1;
 
@@ -102,7 +103,8 @@ pub fn parse() -> Result<Vec<ParsedFile>, Box<dyn std::error::Error>> {
             return Some(ParsedFile {
                 doc_id,
                 category,
-                total_word_count,
+                // it's used only for ratio calculation which is a decimal number
+                total_word_count: total_word_count as f32,
                 counted_words,
             });
         })
