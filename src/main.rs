@@ -58,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("@RELATION words\n");
 
     for selected_word in selected_words_iter.clone() {
-        println!("@ATTRIBUTE {} real", selected_word.word);
+        println!("@ATTRIBUTE \"{}\" real", selected_word.word);
     }
 
     let mut categories = Trie::<String, ()>::new();

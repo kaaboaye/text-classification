@@ -49,10 +49,19 @@ pub fn parse() -> Result<Vec<ParsedFile>, Box<dyn std::error::Error>> {
                 .unwrap()
                 .to_string();
 
-            drop(path_iter);
+            (entry, category, doc_id)
+        })
+        .filter(|(_entry, category, _doc_id)| {
+            category == "alt.atheism"
+                || category == "comp.sys.mac.hardware"
+                || category == "rec.motorcycles"
+                || category == "sci.med"
+                || category == "talk.politics.guns"
+        })
+        .map(|(entry, category, doc_id)| {
+            let path = entry.as_ref().unwrap().path();
 
             let contents = fs::read_to_string(path);
-
             if contents.is_err() {
                 eprintln!("File {} is not a valid UTF-8", path.display());
                 return None;
